@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import * as React from 'react';
@@ -11,8 +9,7 @@ import { slugify, getBackdropImage, getPosterImage } from '@/lib/utils';
 import { Info, PlayCircle } from 'lucide-react';
 import { StarRating } from './media';
 import { Badge } from './ui/badge';
-import { ServerSelectionModal } from './PlayerModal';
-import type { PlayerModalInfo } from './PlayerModal';
+import { PlayButton } from './PlayerModal';
 import type { EmblaCarouselType } from 'embla-carousel-react';
 import {
   ShadcnCarousel,
@@ -20,8 +17,6 @@ import {
   CarouselItem,
 } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
-import { cn } from '@/lib/utils';
-
 
 //================================================================//
 // 1. HERO COMPONENT
@@ -37,24 +32,6 @@ export function Hero({ item }: HeroProps) {
   const releaseDate = 'release_date' in item ? item.release_date : item.first_air_date;
   const year = releaseDate ? new Date(releaseDate).getFullYear() : 'N/A';
   const itemSlug = slugify(title);
-
-  let playerInfo: PlayerModalInfo;
-  if (media_type === 'movie') {
-    playerInfo = {
-      tmdbId: String(item.id),
-      title: title,
-      type: 'movie',
-    };
-  } else {
-    // For TV shows, we need season and episode. We'll default to S1E1.
-    playerInfo = {
-      tmdbId: String(item.id),
-      title: `${title} - S1E1`,
-      type: 'tv',
-      season: 1,
-      episode: 1,
-    };
-  }
 
   return (
     <div className="relative h-[85vh] min-h-[600px] w-full">
@@ -107,12 +84,24 @@ export function Hero({ item }: HeroProps) {
               {item.overview}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4">
-              <ServerSelectionModal playerInfo={playerInfo}>
+              <PlayButton
+                title={media_type === 'movie' ? title : `${title} - S1E1`}
+                showTitle={title} // Pass clean title
+                mediaType={media_type}
+                tmdbId={item.id}
+                season={media_type === 'tv' ? 1 : undefined}
+                episode={media_type === 'tv' ? 1 : undefined}
+                posterPath={item.poster_path || undefined}
+                backdropPath={item.backdrop_path || undefined}
+                voteAverage={item.vote_average}
+                overview={item.overview}
+              >
                 <Button size="lg" className="font-bold text-lg w-full sm:w-auto transition-all duration-300 hover:scale-105 shadow-lg shadow-primary/30">
                   <PlayCircle className="mr-2 h-7 w-7" />
                   Play
                 </Button>
-              </ServerSelectionModal>
+              </PlayButton>
+              
               <Button asChild size="lg" variant="outline" className="bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/20 text-white font-bold text-lg w-full sm:w-auto transition-all duration-300 hover:scale-105">
                 <Link href={`/${media_type}/${itemSlug}-${item.id}`} prefetch={false}>
                   <Info className="mr-2 h-5 w-5" />
@@ -126,7 +115,6 @@ export function Hero({ item }: HeroProps) {
     </div>
   );
 }
-
 
 //================================================================//
 // 2. HERO SLIDESHOW COMPONENT

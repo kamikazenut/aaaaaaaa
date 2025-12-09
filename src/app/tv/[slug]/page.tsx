@@ -1,5 +1,3 @@
-
-
 import { notFound } from 'next/navigation';
 import { getTVShowDetails, getSeasonDetails, getTvRecommendations, getTvReviews } from '@/lib/tmdb';
 import { extractIdFromSlug, getBackdropImage, getPosterImage, jsonLd } from '@/lib/utils';
@@ -148,11 +146,13 @@ export default async function TVShowPage({ params }: TVShowPageProps) {
           
           <TrailersCarousel videos={show.videos?.results || []} />
 
+          {/* UPDATED: Added posterPath prop here */}
           <SeasonsDisplay 
             seasons={show.seasons} 
             showId={show.id} 
             showName={show.name}
             initialData={initialSeasonDetails}
+            posterPath={show.poster_path} 
           />
 
           <CreditsCarousel credits={show.credits.cast} title="Cast" />

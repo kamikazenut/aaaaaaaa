@@ -16,10 +16,9 @@ export default function TermsOfServicePage() {
 
         <h2 className="text-xl font-bold pt-4">About {siteConfig.name}</h2>
         <p>
-          {siteConfig.name} is a free, open-source movie and TV show discovery platform. We help you discover content and find information about where to watch it online. We do not host, store, or stream any video content. All video content is provided by external, independent streaming services and video players.
+          {siteConfig.name} is a free, movie and TV show discovery platform. We help you discover content and find information about where to watch it online. We do not host, store, or stream any video content. All video content is provided by external, independent streaming services and video players.
         </p>
         <p>
-          {siteConfig.name} is released under the MIT License and is available on GitHub for anyone to review, use, or contribute to.
         </p>
 
         <h2 className="text-xl font-bold pt-4">Acceptance of Terms</h2>

@@ -1,5 +1,3 @@
-
-
 'use client'
 
 import React, { useState, useEffect, useCallback, useMemo, useTransition } from 'react';
@@ -18,9 +16,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PlayButton } from '@/components/PlayerModal';
 import { Carousel, ShadcnCarousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialogs';
-import { ChevronLeft, ChevronRight, PlayCircle, Loader2, Star } from 'lucide-react';
+import { ChevronLeft, ChevronRight, PlayCircle, Loader2, Star, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useWatchHistory } from '@/hooks/use-watch-history';
 
 
 //================================================================//
@@ -102,6 +101,11 @@ export function MediaHero({ item, type }: MediaHeroProps) {
                   mediaType="movie"
                   tmdbId={item.id}
                   title={item.title}
+                  showTitle={item.title}
+                  posterPath={item.poster_path || undefined}
+                  backdropPath={item.backdrop_path || undefined}
+                  voteAverage={item.vote_average}
+                  overview={item.overview}
                 />
               ) : (
                 <PlayButton
@@ -110,6 +114,11 @@ export function MediaHero({ item, type }: MediaHeroProps) {
                   season={item.seasons.find(s => s.season_number > 0)?.season_number || 1}
                   episode={1}
                   title={`${item.name} - S${item.seasons.find(s => s.season_number > 0)?.season_number || 1}E1`}
+                  showTitle={item.name}
+                  posterPath={item.poster_path || undefined}
+                  backdropPath={item.backdrop_path || undefined}
+                  voteAverage={item.vote_average}
+                  overview={item.overview}
                 />
               )}
             </div>
@@ -125,7 +134,7 @@ export function MediaHero({ item, type }: MediaHeroProps) {
 }
 
 //================================================================//
-// 2. BACKGROUND IMAGE (From src/components/BackgroundImage.tsx)
+// 2. BACKGROUND IMAGE
 //================================================================//
 
 type BackgroundImageProps = {
@@ -224,9 +233,10 @@ type SeasonsDisplayProps = {
   showId: number;
   showName: string;
   initialData: SeasonDetailsType | null;
+  posterPath?: string | null;
 };
 
-export function SeasonsDisplay({ seasons, showId, showName, initialData }: SeasonsDisplayProps) {
+export function SeasonsDisplay({ seasons, showId, showName, initialData, posterPath }: SeasonsDisplayProps) {
   const filteredSeasons = useMemo(() => seasons.filter(s => s.season_number > 0 && s.episode_count && s.episode_count > 0), [seasons]);
 
   const [selectedSeasonNumber, setSelectedSeasonNumber] = useState(
@@ -308,6 +318,7 @@ export function SeasonsDisplay({ seasons, showId, showName, initialData }: Seaso
                 showId={showId}
                 showName={showName}
                 seasonNumber={seasonDetails.season_number}
+                posterPath={posterPath}
               />
             ))
           )}
@@ -317,12 +328,26 @@ export function SeasonsDisplay({ seasons, showId, showName, initialData }: Seaso
   );
 }
 
-function EpisodeCard({ episode, showId, showName, seasonNumber }: { episode: Episode; showId: number; showName: string, seasonNumber: number }) {
+function EpisodeCard({ episode, showId, showName, seasonNumber, posterPath }: { episode: Episode; showId: number; showName: string, seasonNumber: number, posterPath?: string | null }) {
   const episodeTitle = `${showName} season ${seasonNumber} episode ${episode.episode_number}: ${episode.name}`;
   const stillImageUrl = getBackdropImage(episode.still_path, 'w780');
+  
+  // === EPISODE PROGRESS TRACKING ===
+  const { history } = useWatchHistory();
+  
+  const historyItem = history.find(h => 
+    h.tmdbId === String(showId) && 
+    h.season === seasonNumber && 
+    h.episode === episode.episode_number
+  );
+
+  const progress = historyItem?.progress || 0;
+  const duration = historyItem?.duration || 0;
+  const progressPercent = duration > 0 ? (progress / duration) * 100 : 0;
+  const isWatched = progressPercent > 90;
 
   return (
-    <Card className="bg-card/80 rounded-lg overflow-hidden">
+    <Card className={cn("bg-card/80 rounded-lg overflow-hidden transition-colors", isWatched && "bg-green-900/10 border-green-900/30")}>
       <div className="md:flex md:items-start md:gap-4 p-3">
         <div className="w-full md:w-48 flex-shrink-0 mb-3 md:mb-0">
           <div className="aspect-video relative rounded-md bg-muted/50 overflow-hidden">
@@ -332,15 +357,32 @@ function EpisodeCard({ episode, showId, showName, seasonNumber }: { episode: Epi
               title={`Still image for ${episodeTitle}`}
               fill
               loading="lazy"
-              className="object-cover"
+              className={cn("object-cover transition-opacity", isWatched && "opacity-60")}
               sizes="(max-width: 768px) 100vw, 192px"
               data-ai-hint="tv episode still"
             />
+            
+            {/* Watched Indicator Overlay */}
+            {isWatched && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                    <CheckCircle2 className="w-8 h-8 text-green-400 drop-shadow-md" />
+                </div>
+            )}
+
+            {/* Progress Bar */}
+            {progressPercent > 0 && !isWatched && (
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-800">
+                    <div 
+                        className="h-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.8)]" 
+                        style={{ width: `${progressPercent}%` }} 
+                    />
+                </div>
+            )}
           </div>
         </div>
         <div className="flex-grow space-y-2">
           <div className="flex justify-between items-start gap-2">
-            <h4 className="font-semibold line-clamp-2 text-sm md:text-base flex-1">
+            <h4 className={cn("font-semibold line-clamp-2 text-sm md:text-base flex-1", isWatched && "text-muted-foreground")}>
               {episode.episode_number}. {episode.name}
             </h4>
             <div className="md:hidden flex-shrink-0">
@@ -350,6 +392,10 @@ function EpisodeCard({ episode, showId, showName, seasonNumber }: { episode: Epi
                 season={seasonNumber}
                 episode={episode.episode_number}
                 title={`${showName} - S${seasonNumber}E${episode.episode_number} - ${episode.name}`}
+                showTitle={showName}
+                overview={episode.overview}
+                backdropPath={episode.still_path || undefined}
+                posterPath={posterPath || undefined}
               >
                 <Button size="icon" className="h-9 w-9 rounded-full">
                   <PlayCircle className="h-5 w-5" />
@@ -367,6 +413,10 @@ function EpisodeCard({ episode, showId, showName, seasonNumber }: { episode: Epi
             season={seasonNumber}
             episode={episode.episode_number}
             title={`${showName} - S${seasonNumber}E${episode.episode_number} - ${episode.name}`}
+            showTitle={showName}
+            overview={episode.overview}
+            backdropPath={episode.still_path || undefined}
+            posterPath={posterPath || undefined}
           />
         </div>
       </div>
@@ -804,4 +854,3 @@ export function ReviewCard({ review }: ReviewCardProps) {
     </Card>
   );
 }
-

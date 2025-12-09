@@ -15,7 +15,7 @@ export default function DMCA() {
 
         <h2 className="text-xl font-bold pt-4">About {siteConfig.name} & Copyright</h2>
         <p>
-            {siteConfig.name} is a free, open-source movie and TV show discovery platform. We do not host, store, upload, or distribute any copyrighted video content. We are purely an information aggregation service that helps users discover content and find information about movies and TV shows.
+            {siteConfig.name} is a free, movie and TV show discovery platform. We do not host, store, upload, or distribute any copyrighted video content. We are purely an information aggregation service that helps users discover content and find information about movies and TV shows.
         </p>
         <p>
             All content information displayed on {siteConfig.name} comes from The Movie Database (TMDb), a legitimate, community-built database that provides publicly available metadata about movies and TV shows.

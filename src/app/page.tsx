@@ -1,5 +1,3 @@
-
-
 import type { Metadata } from 'next';
 import { HeroSlideshow } from '@/components/Hero';
 import {
@@ -10,6 +8,8 @@ import { PosterCard } from '@/components/media';
 import { Carousel } from '@/components/ui/carousel';
 import { RecentlyReleased } from '@/components/RecentlyReleased';
 import { FeaturedCollections } from '@/components/FeaturedCollections';
+// IMPORT ADDED HERE
+import { ContinueWatching } from '@/components/ContinueWatching'; 
 import type { Movie, TVShow } from '@/lib/tmdb-schemas';
 import { BackgroundImage } from '@/components/media/details';
 import { getPosterImage, getBackdropImage, jsonLd } from '@/lib/utils';
@@ -102,6 +102,9 @@ async function HomePage() {
         <BackgroundImage posterUrl={backgroundPosterUrl} backdropUrl={backgroundBackdropUrl} />
         {slideshowItems.length > 0 && <HeroSlideshow items={slideshowItems} />}
         <div className="flex flex-col space-y-12 py-12">
+
+          {/* COMPONENT ADDED HERE */}
+          <ContinueWatching />
 
           <FeaturedCollections />
 

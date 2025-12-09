@@ -1,6 +1,7 @@
-
 import type { Metadata } from 'next';
 import './globals.css';
+// ADDED: Shaka Player CSS for the UI controls
+import 'shaka-player/dist/controls.css'; 
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Toaster } from '@/components/ui/dialogs';
@@ -81,6 +82,10 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={jsonLd(organizationSchema)}
         />
+        
+        {/* ADDED: Google IMA SDK for VAST Ads */}
+        <script src="//imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
+
         <AdScripts />
       </head>
       <body
